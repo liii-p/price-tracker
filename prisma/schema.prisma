@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum TargetType {
+  PERCENT // targetValue is a % discount off baselinePrice
+  PRICE   // targetValue is an absolute price
+}
+
+enum ItemStatus {
+  ACTIVE
+  PAUSED
+}
+
+model Item {
+  id            String      @id @default(cuid())
+  url           String
+  title         String
+  imageUrl      String?
+  currency      String?
+  baselinePrice Float
+  currentPrice  Float?
+  lowestPrice   Float?
+  targetType    TargetType
+  targetValue   Float
+  targetPrice   Float
+  status        ItemStatus  @default(ACTIVE)
+  alerted       Boolean     @default(false)
+  lastCheckedAt DateTime?
+  lastError     String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  pricePoints   PricePoint[]
+}
+
+model PricePoint {
+  id        String   @id @default(cuid())
+  itemId    String
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  price     Float
+  checkedAt DateTime @default(now())
+
+  @@index([itemId, checkedAt])
+}

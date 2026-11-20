@@ -1,0 +1,20 @@
+services:
+  price-tracker:
+    build: .
+    image: price-tracker
+    container_name: price-tracker
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    # Your settings (Resend key, secrets, etc.) are read from .env at startup, not baked into the image
+    env_file: .env
+    environment:
+      # Keep the database on the persistent volume, overriding the local dev path in .env
+      DATABASE_URL: "file:/data/price-tracker.db"
+      # Time zone used for the check schedule (CHECK_CRON) and dates shown in the app
+      TZ: ${TZ:-Australia/Adelaide}
+    volumes:
+      - price-data:/data
+
+volumes:
+  price-data:
